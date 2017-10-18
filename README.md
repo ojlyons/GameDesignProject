@@ -1,1 +1,2 @@
 # GameDesignProject
+Jerome Burley 
