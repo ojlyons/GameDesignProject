@@ -1,4 +1,6 @@
 # GameDesignProject
 
-
-it's olivia!
+Jerome Burley 
+Micah Rubin
+Tommie Day
+Olivia Lyons
