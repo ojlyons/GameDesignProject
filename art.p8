@@ -6,7 +6,14 @@ py = 16
 pspd = 8
 movetime = 0
 timepermove = 10
+cards_total = 1 --total number of cards for a level
+cards_found = 0 --number of cards collected thus far
+enemies = {} --table to store enemies
 
+--[[this function returns the 
+flag value of the object at
+position x,y on the map.
+used to check for collisions.]]
 function bump(x,y)
  return fget(mget(flr(x/8),flr(y/8)),0)
 end
@@ -61,15 +68,22 @@ function _update()
    py -= pspd
   end 
  end
+ 
+ --check for collectibles
+ if fget(mget(flr(px/8),flr(py/8))) == 2 then
+ 	cards_found += 1
+ 	mset(flr(px/8),flr(py/8),21)
+ end
+ 
 end
 
 function _draw()
  cls()
  map(0,0,0,0,128,128)--map
- spr(52,px,py)--him
- spr(7,112,58)--him
- spr(9,104,58)
- spr(54,104,66)
+ spr(52,px,py)--player
+ spr(7,112,58)--enemy w/ laser
+ spr(9,104,58) --laser
+ spr(54,104,66)--??
  
  
  --spr(4,50,48)
