@@ -17,6 +17,8 @@ elevator = 22
 enemy = 6
 background = 21
 
+lvl=1
+
 --[[this function returns the 
 flag value of the object at
 position x,y on the map.
@@ -70,8 +72,16 @@ function move(dx,dy)
  end
  return 8
 end
+
+function load_level(n)
+ camera_x = ((n-1)*128) - (flr((n-1)/8)*2048)
+ camera_y = flr((n-1)/8) * 128
+end
  
 function _update()
+
+load_level(lvl)
+ 
  if movetime > 0 then
   movetime -= 1
  end
@@ -94,6 +104,7 @@ function _update()
  if btn(3) and movetime == 0 then
   py += move(0, 8)
   movetime = timepermove
+  lvl += 1
  end
 end
 
@@ -114,6 +125,8 @@ function _draw()
  --spr(9,104,58) --laser
  --spr(54,104,66)--??
  
+ --camera()
+ camera(camera_x,camera_y)
  
  --spr(4,50,48)
 end
