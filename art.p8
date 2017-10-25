@@ -21,6 +21,7 @@ enemy = 6
 background = 21
 levels = {{xs=48, ys=16, crds=1}, {xs=240, ys=72, crds=1}, {xs=336, ys=112, crds=1}}
 level_end = false --when this is true, we are changing levels and have different functionality
+cards_found = 0
 
 function fillsprites()
  for x=0,127 do
