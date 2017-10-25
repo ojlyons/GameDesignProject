@@ -73,7 +73,7 @@ function move(dx,dy)
   --if have all keycards then
   if cards_found = 1 then
    sprites[(tx+dx)/8][(ty+dy)/8] = 45
-  --end
+  end
   return 0
  elseif sprites[(tx+dx)/8][(ty+dy)/8] == closedsideelevator then --closed horizontal elevator
   --if have all keycards then
