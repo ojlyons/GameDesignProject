@@ -6,11 +6,9 @@ camera_y = 0
 px = 48
 py = 16
 level = 1
-pspd = 8
 movetime = 0
 timepermove = 10
 cards_total = 1 --total number of cards for a level
-cards_found = 0 --number of cards collected thus far
 enemies = {} --table to store enemies
 sprites = {}
 --sprite values
@@ -55,8 +53,7 @@ end
 function move(dx,dy)
  local tx = px
  local ty = py
-	if fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 1 then --obstacle
-  level += 1
+ if fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 1 then --obstacle
   return 0
  elseif 34 < sprites[(tx+dx)/8][(ty+dy)/8] and sprites[(tx+dx)/8][(ty+dy)/8] < 40 then --chair
   tx+=dx
@@ -104,34 +101,34 @@ function _update()
 
 	if level_end then
 		load_level(level)
-	else
+		return
+	end
  	if movetime > 0 then
-  	movetime -= 1
+  	 movetime -= 1
  	end
 
  	if btn(0) and movetime == 0 then
-  	px -= move(-8, 0)
-  	movetime = timepermove
+  	 px -= move(-8, 0)
+  	 movetime = timepermove
  	end
  
  	if btn(1) and movetime == 0 then
-  	px += move(8, 0)
-  	movetime = timepermove
+  	 px += move(8, 0)
+  	 movetime = timepermove
  	end
  
  	if btn(2) and movetime == 0 then
-  	py -= move(0, -8)
-  	movetime = timepermove
+  	 py -= move(0, -8)
+  	 movetime = timepermove
  	end
  
  	if btn(3) and movetime == 0 then
-  	py += move(0, 8)
-  	movetime = timepermove
+  	 py += move(0, 8)
+  	 movetime = timepermove
  	end
  	
  	if btn(4) then
- 		resetlevel()
- 	end
+ 	 resetlevel()
 	end
 end
 
