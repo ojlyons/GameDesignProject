@@ -335,10 +335,10 @@ function _draw()
  end]]
 
  camera(camera_x,camera_y)
- trash = camera_x
- print(fget(mget(flr(px/8),flr(py/8))), camera_x, 0)
- print(px/8, camera_x + 20, 0)
- print(py/8, camera_x + 40, 0) 
+ --trash = camera_x
+ --print(fget(mget(flr(px/8),flr(py/8))), camera_x, 0)
+ --print(px/8, camera_x + 20, 0)
+ --print(py/8, camera_x + 40, 0) 
  
  spr(58,camera_x,camera_y) --keycard icon
  print(cards_found,camera_x + 10, camera_y+2,7) 
