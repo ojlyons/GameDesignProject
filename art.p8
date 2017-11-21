@@ -404,7 +404,7 @@ function _draw()
  if level_status == -1 then
  	draw_directions()
  end
- if level_status > 0 then
+ if level_status >= 0 then
  	draw_game()
  end
 end
@@ -704,4 +704,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
