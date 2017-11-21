@@ -340,10 +340,10 @@ function _update()
 	  resetlevel()
 	 end
 	 
-	 if btn(5) then
-	  level += 1
-	  load_level()
-	 end
+	 --if btn(5) then
+	 -- level += 1
+	 -- load_level()
+	 --end
 	end
 end
 
