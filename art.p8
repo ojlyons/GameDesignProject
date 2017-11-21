@@ -340,10 +340,10 @@ function _update()
 	  resetlevel()
 	 end
 	 
-	 --if btn(5) then
-	 -- level += 1
-	 -- load_level()
-	 --end
+	 if btn(5) then
+	  level += 1
+	  load_level()
+	 end
 	end
 end
 
@@ -375,8 +375,16 @@ function draw_directions()
 	print("press z to continue", 0, 80, 9)
 end
 
+function draw_game_over()
+	print("well done!", 0, 4, 9)
+	print("you successfully escaped the ",0,12,9)
+	spr(96, 32, 24, 9, 2, false, false)
+	spr(flame_sprite, 32, 32, 1, 1, false, false)
+	print("and the wrath of your employees!",0,48,9)
+end
+
 function draw_game()
-	for x = 0, 127 do
+ for x = 0, 127 do
   for y = 0, 31 do
    spr(sprites[x][y],x*8,y*8)
   end
@@ -406,6 +414,9 @@ end
 
 function _draw()
  cls()
+ --if level>#levels then
+ -- draw_game_over()
+ --end
  --print(level_status,20,0,9)
  if level_status == -2 then
  	draw_menu()
