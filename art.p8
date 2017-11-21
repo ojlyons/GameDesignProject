@@ -107,13 +107,13 @@ function load_level()
  timer = 0
  cards_found = 0
  cards_total = levels[level]['crds']
- if level>8 then 
-  camera_x = ((level-1)*64)-(flr((level-1)/8)*512)
+ --if level>8 then 
+  camera_x = ((level-1)*128)-(flr((level-1)/8)*1024)
   camera_y = flr((level-1)/8) * 128
- else
-  camera_x = ((level-1)*128) - (flr((level-1)/8)*2048)
-  camera_y = flr((level-1)/8) * 128
- end
+ --else
+ -- camera_x = ((level-1)*128)
+ -- camera_y = flr((level-1)/8) * 128
+ --end
  px = levels[level]['xs']
  py = levels[level]['ys']
  e_loc = {px, py} 
@@ -269,12 +269,17 @@ end
 
 function _update()
 	if level_status == -2 then
-		if btn(5) then level_status = -1 end
+		if btn(5) then 
+		 level_status = 2
+         music(1)
+		end
 		flame()
+		return
 	end
 	if level_status == -1 then
 		draw_directions()
 		if btn(4) then level_status = 2 end
+		return
 	else		
 	 timer += 1
 	 st += 1
@@ -343,34 +348,43 @@ function _update()
 end
 
 function _init()
- music(1)
  fillsprites()
 end
 
 function draw_menu()
 	spr(96, 32, 24, 9, 2, false, false)
 	spr(flame_sprite, 32, 32, 1, 1, false, false)
-	print("press x to start", 32, 48, 9)
+	print("press x to start", 32, 96, 9)
+	print("use the arrow keys to move.", 0, 56, 9)
+	print("stuck? use z to reset the level.",0,64,9)
+	print("push office chairs to block the",0,72,9)
+	print("laser pointers of your employees.", 0, 80, 9)
 end
 
 function draw_directions()
-	--[[print("you are the ceo of a major corporation." ,0,0,9)
-	print("after months of tension, things have" ,0,8,9)
-	print("finally come to a boil when you began", 0, 16, 9)
-	print("charging employees to drink from the",0,24,9)
-	print("water cooler. now they are rebelling.",0,32,9)
-	print("you must escape your office tower " ,0,40,9)
-	print("without being caught in their sight.", 0, 48, 9)
-	]]
-	
-	print("use the arrow keys to move", 12, 56, 9)
-	print("use z to reset the level.",15,64,9)
-	print("push chairs to deflect lasers!",5,72,9)
-	print("press z to continue", 27, 88, 7)
+	--print("you are the ceo of a major corporation." ,0,0,9)
+	--print("after months of tension, things have" ,0,8,9)
+	--print("finally come to a boil when you began", 0, 16, 9)
+	--print("charging employees to drink from the",0,24,9)
+	--print("water cooler. now they are rebelling.",0,32,9)
+	--print("you must escape your office tower " ,0,40,9)
+	--print("without being caught in their sight.", 0, 48, 9)
+	print("use the arrow keys to move", 0, 56, 9)
+	print("use z to reset the level.",0,64,9)
+	print("push chairs to avoid being caught",0,72,9)
+	print("press z to continue", 0, 80, 9)
+end
+
+function draw_game_over()
+	print("well done!", 0, 4, 9)
+	print("you successfully escaped the ",0,12,9)
+	spr(96, 32, 24, 9, 2, false, false)
+	spr(flame_sprite, 32, 32, 1, 1, false, false)
+	print("and the wrath of your employees!",0,48,9)
 end
 
 function draw_game()
-	for x = 0, 127 do
+ for x = 0, 127 do
   for y = 0, 31 do
    spr(sprites[x][y],x*8,y*8)
   end
@@ -400,7 +414,10 @@ end
 
 function _draw()
  cls()
- print(level_status,20,0,9)
+ --if level>#levels then
+ -- draw_game_over()
+ --end
+ --print(level_status,20,0,9)
  if level_status == -2 then
  	draw_menu()
  end
@@ -588,7 +605,7 @@ __sfx__
 011e0000005000050024565275652956530560305652d5602d5612d5612d5651f5001f5002d5002d5652b5652456024561245612456500500285652b565285652156021561215612156500000000000000000000
 011e0000245602456124561245650000028565295652b5652d56530560305652d5652b565305652b5652c5652d5602d5612d5612d56500000245652756524565225651d5601d5611d5611d565000000000000000
 011e0000000001d5651f56520565000001a5651b5651a565185601856118561185651a565175651d5601d565000001a565175651e5601e565225602256122565000001a565185601856118561185611856118565
-013200003777337703093720737300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003
+01320000377733770315372133730c003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003
 010300000150109571095710a5710a5710a5710a5710b5710b5710c5710d5710d5710e5711157115571185711b5711f57122571275712e57132571345711e501225012250126501045012a5012e5013650139501
 010600000400031070310603105031040310303101002400024000240002450034500345004460044600546005460054600646007460074700847008470094700b4700c470044000440004400000000000000000
 01060000004003107031060310503104031030310101940018400154000c4000b400094000840008400074000c4700b4700947008470084700747007460064600546005460054600446004460034500345002450
@@ -707,3 +724,4 @@ __music__
 00 41424344
 00 41424344
 00 41424344
+
