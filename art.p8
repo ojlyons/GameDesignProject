@@ -268,6 +268,7 @@ function flame()
 end
 
 function _update()
+    
 	if level_status == -2 then
 		if btn(5) then 
 		 level_status = 2
@@ -287,8 +288,9 @@ function _update()
 		
 	 if st >= 30 then
 	  st = 0
+	  
 	 end
-	
+	 
 	 if money <=0 then
 	  die()
 	  money=999
@@ -376,11 +378,12 @@ function draw_directions()
 end
 
 function draw_game_over()
-	print("well done!", 0, 4, 9)
-	print("you successfully escaped the ",0,12,9)
-	spr(96, 32, 24, 9, 2, false, false)
-	spr(flame_sprite, 32, 32, 1, 1, false, false)
-	print("and the wrath of your employees!",0,48,9)
+    cls()
+	print("well done!", camera_x+45, camera_y, 9)
+	print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+	spr(96, camera_x+32, camera_y+24, 9, 2, false, false)
+	spr(flame_sprite, camera_x+32, camera_y+32, 1, 1, false, false)
+	print("and the wrath of your employees!",camera_x+1,camera_y+48,9)
 end
 
 function draw_game()
@@ -426,6 +429,9 @@ function _draw()
  end
  if level_status >= 0 then
  	draw_game()
+ end
+ if level >= 9 then
+    draw_game_over()
  end
 end
 __gfx__
@@ -724,4 +730,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
