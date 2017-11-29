@@ -269,13 +269,10 @@ function flame()
 end
 
 function _update()
-	timer += 1
+	
 	dd=false
     
 	if level_status == -2 then -- if title screen
-	    if timer % 70 == 3 or timer % 70 == 19 then
-		 sfx(14)
-		end
 		if btnp(5) then 
 		 --level_status = 2
          --music(1)
@@ -294,16 +291,16 @@ function _update()
 		draw_email()
 		if btnp(4) then  --start game
 			level_status = 2
-			timer = 0
 			music(1)
 		end 
 	end
 	
-	if level_status == -1 then
+	if level_status == -1 then --if 
 		draw_directions()
 		if btnp(5) then level_status = 2 end
 		return
 	else		
+	 timer += 1
 	 st += 1
 	 money = money - 1/30
 		
@@ -374,7 +371,6 @@ function _update()
 	end
 end
 
-
 function _init()
  fillsprites()
 end
@@ -382,7 +378,7 @@ end
 function draw_menu()
 	spr(96, 32, 24, 9, 2, false, false)
 	spr(flame_sprite, 32, 32, 1, 1, false, false)
-	print("press x to check your email", 10, 96, 9)
+	print("press x to start", 32, 96, 9)
 	--print("use the arrow keys to move.", 0, 56, 9)
 	--print("stuck? use z to reset the level.",0,64,9)
 	--print("push office chairs to block the",0,72,9)
@@ -396,19 +392,46 @@ function draw_directions()
 	print("stuck? use z to reset",camera_x+22,camera_y+64,0)
 	print("the level.",camera_x+43,camera_y+70,0)
 	print("push office chairs to ",camera_x+21,camera_y+80,0)
-	print("block your employees'", camera_x+21, camera_y+86, 0)
-	print("laser pointers.", camera_x+36, camera_y+92, 0)
+	print("block the laser pointers ", camera_x+15, camera_y+86, 0)
+	print("of your employees.", camera_x+27, camera_y+92, 0)
 end
-
 function draw_game_over()
-    cls()
-	print("well done!", camera_x+45, camera_y, 9)
-	print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+    freeze_money = true
+	cls()
 	spr(96, camera_x+32, camera_y+24, 9, 2, false, false)
 	spr(flame_sprite, camera_x+32, camera_y+32, 1, 1, false, false)
-	print("and the wrath of your employees!",camera_x+1,camera_y+48,9)
+	
+	--good ending
+	if money > 100 then
+		
+		print("well done!", camera_x+45, camera_y, 9)
+		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+		print("with $",camera_x+1,camera_y+48,9)
+		print(flr(money),camera_x+25,camera_y+48,9)
+		print(",000 to spare!",camera_x+37,camera_y+48,9)
+	elseif money > 10 then
+		print("well done!", camera_x+45, camera_y, 9)
+		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+		print("with $",camera_x+1,camera_y+48,9)
+		print(flr(money),camera_x+25,camera_y+48,9)
+		print(",000 to spare!",camera_x+34,camera_y+48,9)
+	--debt ending
+	elseif money < -100 then
+		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+		print("approximately $",camera_x+1,camera_y+48,9)
+		print(abs(flr(money)),camera_x+61,camera_y+48,9)
+		print(",000 in debt!",camera_x+74,camera_y+48,9)
+	elseif money < -10 then
+		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+		print("approximately $",camera_x+1,camera_y+48,9)
+		print(abs(flr(money)),camera_x+61,camera_y+48,9)
+		print(",000 in debt!",camera_x+70,camera_y+48,9)
+	else
+		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
+		print("completely bankrupt!",camera_x+35,camera_y+48,9)
+	end
+	
 end
-
 function draw_game()
  
  for x = 0, 127 do
@@ -679,7 +702,7 @@ __sfx__
 010300000150109571095710a5710a5710a5710a5710b5710b5710c5710d5710d5710e5711157115571185711b5711f57122571275712e57132571345711e501225012250126501045012a5012e5013650139501
 010600000400031070310603105031040310303101002400024000240002450034500345004460044600546005460054600646007460074700847008470094700b4700c470044000440004400000000000000000
 01060000004003107031060310503104031030310101940018400154000c4000b400094000840008400074000c4700b4700947008470084700747007460064600546005460054600446004460034500345002450
-0101000015050170501705017050170501705017050170501705017050160501705017050170501705017050170501705017050170501f0501f0501f0501f0501f0501f0501f0501f0501f0501f0501f05020050
+011000000000000000000000000000000000000000000000070000600005000050000500004000040000000000000000000000000000000000000000000000000000000000000000000000000030000300002000
 010100002405024050240502405024050240512405124051290512905129051290522905229052290522905229042290422904229042290422904229042290322903229032290222902229022290122901229015
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
