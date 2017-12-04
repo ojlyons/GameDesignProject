@@ -1,44 +1,44 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
-camera_x = 0
+camera_x = 0 --camera position
 camera_y = 0
-px = 48
+px = 48 --px/py are player position
 py = 8
-level = 1
-movetimer = 0
-timepermove = 6
+level = 1 --current level
+movetimer = 0 --used for movement
+timepermove = 6 --character will move 30/timepermove times per second
 cards_total = 1 --total number of cards for a level
 enemies = {} --table to store enemies
-sprites = {}
+sprites = {} --stores whatt sprite should be drawn at each location
+
 --sprite values
-chair = 37 --value of center chair, down is two less, left is one less, right is one more, up is two more
-card = {59,60,61,62,63,64,65,66}
+chair = 37 --value of default chair, the chair pointing: down is 35, left is 36, right is 38, up is 39
+card = {59,60,61,62,63,64,65,66} --all sprite values for a rotating card
 closedvertelevator = 25
 closedsideelevator = 26
 closed_elevators = {25, 42}
 open_elevators = {29, 45}
 enemy = 6
 background = 21
---levels = {{xs=48, ys=8, ed=2, crds=1}, {xs=248, ys=72, ed=-1, crds=1}, {xs=336, ys=120, ed=-2, crds=1}} --ed is the direction he has to go to leave the elevator, -2 is up, -1 is left, 1 is right, 2 is down
-level_status = -2 --meanings:-2 -> main menu, -1 -> background & directions, 0 -> level is not over, 1 -> entering elevator, 2 -> load level, 3 -> leaving elevator
-cards_found = 0
+
+level_status = -2 --meanings: -2 -> main menu, -1 -> background & directions, 0 -> level is not over, 1 -> entering elevator, 2 -> load level, 3 -> leaving elevator
+cards_found = 0 --cards found on current level
 e_loc = {48, 8} --location of elevator currently being entered or exited, or the location of the elevator the current level was entered through
-card_locs = {}
-spindir = 1
-timer = 0
-st = 0
-money = 999
-dying = false
-flame_time = 0
-flame_sprite = 68
+card_locs = {} --stores locations of all keycards
+spindir = 1 --used for the spinning of keycards
+timer = 0 --general timer to time things
+st = 0 --another timer
+money = 999 --score variable
+dying = false --indicates whether to show dying animation/sfx
+flame_time = 0 --timer used for flames on title/game over screens
+flame_sprite = 68 --this variable changes as flame flickers
 sfxp = false --used for email sfx
-freeze_money = false
 
---ed is the direction he has to go to leave the elevator, -2 is up, -1 is left, 
+--stores information about each level (starting location, ed, and number of keycards)
+--ed is the direction the character has to go to leave the elevator, -2 is up, -1 is left, 
 --1 is right, 2 is down
-
-levels = {{xs=48, ys=8, ed=2, crds=1},
+levels = {{xs=48, ys=8, ed=2, crds=1}, 
           {xs=248, ys=72, ed=-1, crds=1}, 
 		  {xs=336, ys=120, ed=-2, crds=1},
 		  {xs=496,ys=8, ed=2, crds=1},
@@ -48,14 +48,11 @@ levels = {{xs=48, ys=8, ed=2, crds=1},
 		  {xs=944,ys=40, ed=2, crds=1},
 		  {xs=120,ys=240, ed=-1, crds=3},
 		  {xs=240,ys=136, ed=2, crds=3},
-		  {xs=256,ys=152, ed=1, crds=3},
-		  {xs=456,ys=248, ed=-2, crds=2},
-		  {xs=560,ys=168, ed=1, crds=2},
-		  {xs=640,ys=208, ed=1, crds=2},
-		  {xs=872,ys=136, ed=2, crds=2}
+		  {xs=256,ys=152, ed=1, crds=3}
 		  
 		  }
 
+--populates sprites, enemies, and card_locs tables
 function fillsprites()
  card_locs = {}
  enemies = {}
@@ -64,7 +61,7 @@ function fillsprites()
   for y=0,31 do
    local c=mget(x,y)
    sprites[x][y]=c
-   if c == 59 then
+   if contains(card, c) then
     add(card_locs, {x, y})
    elseif c == 6 then --enemy facing left
     add(enemies, {x, y, -1})
@@ -75,6 +72,7 @@ function fillsprites()
  end
 end
 
+--check whether a table contains a value (surface level only)
 function contains(arr, x)
  for value in all(arr) do
   if value == x then
@@ -84,6 +82,7 @@ function contains(arr, x)
  return false
 end
 
+--helper method for the methods that handle changing levels
 function level_change()
  if level_status == 1 then
   enter_elevator()
@@ -94,6 +93,7 @@ function level_change()
  end
 end
 
+--animation for entering an elevator at the end of a level
 function enter_elevator()
  if contains(open_elevators, sprites[e_loc[1]/8][e_loc[2]/8]) == false then
   if timer % 8 == 0 then
@@ -109,31 +109,27 @@ function enter_elevator()
  end
 end
 
+--switches from previous level to next, or resets current level
 function load_level()
  timer = 0
  cards_found = 0
  cards_total = levels[level]['crds']
- --if level>8 then 
-  camera_x = ((level-1)*128)-(flr((level-1)/8)*1024)
-  camera_y = flr((level-1)/8) * 128
- --else
- -- camera_x = ((level-1)*128)
- -- camera_y = flr((level-1)/8) * 128
- --end
+ camera_x = ((level-1)*128)-(flr((level-1)/8)*1024) --arithmetic is to corrently position camera when the map is in the second or greater row
+ camera_y = flr((level-1)/8) * 128
  px = levels[level]['xs']
  py = levels[level]['ys']
  e_loc = {px, py} 
  sfx(13, -1,1,25)
  level_status = 3
- if contains(closed_elevators, sprites[e_loc[1]/8][e_loc[2]/8]) then
+ if contains(closed_elevators, sprites[e_loc[1]/8][e_loc[2]/8]) then --opens elevator if it wasn't already
   sprites[e_loc[1]/8][e_loc[2]/8] += 4
  end
 end
 
-
+--animations for leaving the elevator at start of a level
 function leave_elevator()
- if timer < 25 then
-  if timer == 24 then
+ if timer < 25 then 
+  if timer == 24 then --leave the elevator after .8 seconds
    if levels[level]['ed'] % 2 == 0 then
     py += levels[level]['ed']*4
    else
@@ -141,7 +137,7 @@ function leave_elevator()
    end
   end
   return
- else
+ else --animates the elevator closing
   if contains(closed_elevators, sprites[e_loc[1]/8][e_loc[2]/8]) == false then
    if timer % 8 == 0 then
     sprites[e_loc[1]/8][e_loc[2]/8]-=1
@@ -153,6 +149,7 @@ function leave_elevator()
  level_status = 0
 end
 
+--updates keycard sprites to give spinning effect; deletes keycards after they have been collected
 function spin_cards()
  for loc in all(card_locs) do
   if spindir == 0 then
@@ -160,41 +157,43 @@ function spin_cards()
   end
   if sprites[loc[1]][loc[2]] == 59 then
    spindir = 1
-  elseif sprites[loc[1]][loc[2]] == 66 then
+  elseif sprites[loc[1]][loc[2]] == 66 then 
    spindir = -1
-  elseif sprites[loc[1]][loc[2]] < 59 or sprites[loc[1]][loc[2]] > 66 then
+  elseif sprites[loc[1]][loc[2]] < 59 or sprites[loc[1]][loc[2]] > 66 then --keycard no longer there
    del(card_locs, loc)
    spindir = 0
   end
-  sprites[loc[1]][loc[2]] += spindir
+  sprites[loc[1]][loc[2]] += spindir --as spindir changes between 1 and -1, this changes keycards to all sprites in range 59 to 66, creating the spinning effect
  end
 end	
 
+//checks whether enemies should be shooting
 function check_enemies()
  local shoot
  for e in all(enemies) do
   shoot = true
   if e[2] == py/8 and (((e[1]-(px/8))>0) != (e[3]>0)) then --enemy is in same row and facing player
    for xpos = e[1]+e[3], px/8-e[3], e[3] do
-    if fget(sprites[xpos][e[2]]) != 0 then
+    if fget(sprites[xpos][e[2]]) != 0 then --something is between the enemy and the player
      shoot = false
     end
    end
-   if shoot then
+   if shoot then --nothing blocked the shot
     timer = 0
    	sfx(10,-1,0,4)
     dying = true
     sprites[e[1]][e[2]] += 1   
     for xpos = e[1]+e[3], (px/8)-e[3], e[3] do
-     sprites[xpos][e[2]] = 9
+     sprites[xpos][e[2]] = 9 --sprite for laser
     end
    end
   end
  end
 end
 
+--attempt to move horizontally by dx pixels or vertically by dy pixels, checks validity of move and handles most consequences of movement (e.g. pushing chairs)
 function move(dx,dy)
- local tx = px
+ local tx = px --temp variables to store location player is moving from
  local ty = py
  if fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 1 then --obstacle
   return 0
@@ -202,29 +201,30 @@ function move(dx,dy)
  elseif 34 < sprites[(tx+dx)/8][(ty+dy)/8] and sprites[(tx+dx)/8][(ty+dy)/8] < 40 then --chair
   tx+=dx
   ty+=dy
-  if fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 0 then
+  if fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 0 then --nothing is blocking chair from moving
    sprites[tx/8][ty/8]=background
-   sprites[(tx+dx)/8][(ty+dy)/8]=chair+(dx/8)+(dy/8)*2
+   sprites[(tx+dx)/8][(ty+dy)/8]=chair+(dx/8)+(dy/8)*2 --arithmetic sets chair to proper sprite depending on direction it was pushed
    return dx+dy
   else
-   return 0
+   return 0 --something was in chair's way, no movement
   end
   
- elseif contains(card, sprites[(tx+dx)/8][(ty+dy)/8]) then --keycard
+  
+ elseif contains(card, sprites[(tx+dx)/8][(ty+dy)/8]) then --picking up a keycard
   sfx(11,-1,1,23)
   cards_found += 1
   sprites[(tx+dx)/8][(ty+dy)/8]=background
   del(card_locs, {tx+dx/8, ty+dy/8})
   return dx+dy
+ 
+ elseif sprites[(tx+dx)/8][(ty+dy)/8] == enemy then --walked into enemy
+  dying = true
   
- elseif sprites[(tx+dx)/8][(ty+dy)/8] == enemy then --enemy
-  die()
-
- elseif e_loc[1] == tx+dx and e_loc[2] == ty+dy then
+ elseif e_loc[1] == tx+dx and e_loc[2] == ty+dy then --attempt to enter starting elevator, no movement occurs
   return 0
  
- elseif fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 8 then
-  if cards_found == levels[level]['crds']  then 
+ elseif fget(sprites[(tx+dx)/8][(ty+dy)/8]) == 8 then --attempt to enter the elevator to the next level
+  if cards_found == cards_total then --have all cards, move to next level
    level += 1
    level_status = 1
    sfx(12, -1,1,25)
@@ -233,32 +233,36 @@ function move(dx,dy)
   end
   return 0
  end
- return dx+dy
+ return dx+dy --base case is successful movement
 end
 
+--resets current level
 function resetlevel()
  fillsprites()
  load_level()
 end
 
+--animation for dying
 function die()
  if timer == 1 then
-  if sprites[(px/8)+1][(py/8)] == 21 then
+  --glasses fall off onto an adjacent empty tile
+  if sprites[(px/8)+1][(py/8)] == background then
    sprites[px/8+1][py/8] = 51
-  elseif sprites[(px/8)][(py/8)+1] == 21 then
+  elseif sprites[(px/8)][(py/8)+1] == background then
    sprites[(px/8)][(py/8)+1] = 51
-  elseif sprites[(px/8)-1][(py/8)] == 21 then
+  elseif sprites[(px/8)-1][(py/8)] == background then
    sprites[px/8-1][py/8] = 51
-  elseif sprites[(px/8)][(py/8)-1] == 21 then
+  elseif sprites[(px/8)][(py/8)-1] == background then
    sprites[(px/8)][(py/8)-1] = 51
   end
  end
- if timer >= 60 then	
+ if timer >= 60 then --after a second, the level resets
   resetlevel()
   dying = false
  end
 end
 
+--animates flames
 function flame()
 	flame_time += 1
 	if flame_time == 5 then
@@ -274,19 +278,27 @@ function flame()
 end
 
 function _update()
-	
-	dd=false
+	timer += 1
+	showControls=false	
+	st += 1
+	money = money - 1/30
+		
+	if st >= 30 then
+	 st = 0
+	end
+	 
     
 	if level_status == -2 then -- if title screen
-		if btnp(5) then 
-		 --level_status = 2
-         --music(1)
-		 level_status = -3 --show email
+	    if timer % 70 == 3 or timer % 70 == 19 then --timing for notification sounds
+		 sfx(14)
+		end
+		if btnp(5) then
+		 level_status = -1 --show email
 		end
 		flame()
 		return
 	end
-	if level_status == -3 then --if email screen
+	if level_status == -1 then --if email screen
 		if not sfxp then
 		  sfx(15)
 		  sfxp = true
@@ -296,192 +308,132 @@ function _update()
 		draw_email()
 		if btnp(4) then  --start game
 			level_status = 2
+			timer = 0
 			music(1)
 		end 
 	end
 	
-	if level_status == -1 then --if 
-		draw_directions()
-		if btnp(5) then level_status = 2 end
-		return
-	else		
-	 timer += 1
-	 st += 1
-	 if not freeze_money then
-		money = money - 1/30
-	 end
-		
-	 if st >= 30 then
-	  st = 0
-	  
-	 end
+	if movetimer > 0 then --movement only possible when movetimer = 0
+	 movetimer -= 1
+	end
 	 
-	 if money <=0 then
-	  die()
-	  money=999
-	 end
+	if timer % 8 == 0 then --timing for spinning of cards
+	 spin_cards()
+	end
+	 
+	if level_status > 0 and level<=#levels then --transitioning levels
+	 level_change()
+	 return
+	end
+	 
+	if dying == true then --dying
+	 die()
+	 return
+	end
 	
-	 if movetimer > 0 then
-	  movetimer -= 1
-	 end
+	--movement in each of the four directions
+	if btn(0) and movetimer == 0 then
+	 px += move(-8, 0)
+	 check_enemies()
+	 movetimer = timepermove
+	end
 	 
-	 if timer % 8 == 0 then
-	  spin_cards()
-	 end
+	if btn(1) and movetimer == 0 then
+	 px += move(8, 0)
+	 check_enemies()
+	 movetimer = timepermove
+	end
 	 
-	 if level_status > 0 and level<=#levels then
-	  level_change()
-	  return
-	 end
+	if btn(2) and movetimer == 0 then
+	 py += move(0, -8)
+	 check_enemies()
+	 movetimer = timepermove
+	end
 	 
-	 if dying == true then
-	  die()
-	  return
-	 end
+	if btn(3) and movetimer == 0 then
+	 py += move(0, 8)
+	 check_enemies()
+	 movetimer = timepermove
+	end
 	 
-	 if btn(0) and movetimer == 0 then
-	  px += move(-8, 0)
-	  check_enemies()
-	  movetimer = timepermove
-	 end
+	if btn(4) then --reset button for if level is in impossible state
+	 resetlevel()
+	end
 	 
-	 if btn(1) and movetimer == 0 then
-	  px += move(8, 0)
-	  check_enemies()
-	  movetimer = timepermove
-	 end
-	 
-	 if btn(2) and movetimer == 0 then
-	  py += move(0, -8)
-	  check_enemies()
-	  movetimer = timepermove
-	 end
-	 
-	 if btn(3) and movetimer == 0 then
-	  py += move(0, 8)
-	  check_enemies()
-	  movetimer = timepermove
-	 end
-	 
-	 if btn(4) then
-	  resetlevel()
-	 end
-	 
-	 if btn(5) then
-		dd=true
-	 end
-	 
-	 --if btn(5) then
-	 -- level += 1
-	 -- load_level()
-	 --end
+	if btn(5) then --button to show controls
+	 showControls=true
 	end
 end
+
 
 function _init()
  fillsprites()
 end
 
-function draw_menu()
+--draws title screen
+function draw_menu() 
 	spr(96, 32, 24, 9, 2, false, false)
 	spr(flame_sprite, 32, 32, 1, 1, false, false)
-	print("press x to start", 32, 96, 9)
-	--print("use the arrow keys to move.", 0, 56, 9)
-	--print("stuck? use z to reset the level.",0,64,9)
-	--print("push office chairs to block the",0,72,9)
-	--print("laser pointers of your employees", 0, 80, 9)
+	print("press x to check your email", 10, 96, 9)
 end
 
-function draw_directions()--12
-	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+112,5)
-	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+111,7)
+--shows directions (can be used during gameplay)
+function draw_directions()
+	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+100,5)
+	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+99,7)
 	print("use the arrow keys to move", 12+camera_x, 54+camera_y, 0)
 	print("stuck? use z to reset",camera_x+22,camera_y+64,0)
 	print("the level.",camera_x+43,camera_y+70,0)
 	print("push office chairs to ",camera_x+21,camera_y+80,0)
-	print("block the laser pointers ", camera_x+15, camera_y+86, 0)
-	print("of your employees", camera_x+27, camera_y+92, 0)
-	print("and unlock elevators with", camera_x+14, camera_y+98, 0)
-	print("spinning keycards", camera_x+27, camera_y+104, 0)
+	print("block your employees'", camera_x+21, camera_y+86, 0)
+	print("laser pointers.", camera_x+36, camera_y+92, 0)
 end
+
+--screen for end of game
 function draw_game_over()
-    freeze_money = true
-	cls()
+    cls()
+	print("well done!", camera_x+45, camera_y, 9)
+	print("you successfully escaped the ",camera_x+7,camera_y+12,9)
 	spr(96, camera_x+32, camera_y+24, 9, 2, false, false)
 	spr(flame_sprite, camera_x+32, camera_y+32, 1, 1, false, false)
-	
-	--good ending
-	if money > 100 then
-		
-		print("well done!", camera_x+45, camera_y, 9)
-		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
-		print("with $",camera_x+1,camera_y+48,9)
-		print(flr(money),camera_x+25,camera_y+48,9)
-		print(",000 to spare!",camera_x+37,camera_y+48,9)
-	elseif money > 10 then
-		print("well done!", camera_x+45, camera_y, 9)
-		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
-		print("with $",camera_x+1,camera_y+48,9)
-		print(flr(money),camera_x+25,camera_y+48,9)
-		print(",000 to spare!",camera_x+34,camera_y+48,9)
-	--debt ending
-	elseif money < -100 then
-		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
-		print("approximately $",camera_x+1,camera_y+48,9)
-		print(abs(flr(money)),camera_x+61,camera_y+48,9)
-		print(",000 in debt!",camera_x+74,camera_y+48,9)
-	elseif money < -10 then
-		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
-		print("approximately $",camera_x+1,camera_y+48,9)
-		print(abs(flr(money)),camera_x+61,camera_y+48,9)
-		print(",000 in debt!",camera_x+70,camera_y+48,9)
-	else
-		print("you successfully escaped the ",camera_x+7,camera_y+12,9)
-		print("completely bankrupt!",camera_x+35,camera_y+48,9)
-	end
-	
+	print("and the wrath of your employees!",camera_x+1,camera_y+48,9)
 end
+
+--draws the actual map/player/objects during gameplay
 function draw_game()
- 
  for x = 0, 127 do
   for y = 0, 31 do
    spr(sprites[x][y],x*8,y*8)
   end
  end
- --map(0,0,0,0,128,128)--map
- if dying then
+ if dying then --dying player sprite for after being shot
   spr(54,px,py)
  else
-  spr(52+ flr(st/16),px,py)--player
+  spr(52+ flr(st/16),px,py) --player sprite w/ animated head bob
  end
 
  camera(camera_x,camera_y)
- --trash = camera_x
- --print(fget(mget(flr(px/8),flr(py/8))), camera_x, 0)
- --print(px/8, camera_x + 20, 0)
- --print(py/8, camera_x + 40, 0) 
  
  spr(58,camera_x,camera_y) --keycard icon
  print(cards_found,camera_x + 10, camera_y+2,7) 
  print('/',camera_x + 14, camera_y+2,7)
  print(cards_total,camera_x + 18, camera_y+2,7)
  
- spr(11, camera_x+103, camera_y) --munny
- print(flr(money), camera_x+112, camera_y+2,7)
- print("k",camera_x+124,camera_y+2,7)
+ spr(11, camera_x+103, camera_y) --money (score)
+ if (money > 0) then
+  print(flr(money), camera_x+112, camera_y+2,7)
+  print("k",camera_x+124,camera_y+2,7)
+ else
+  print(flr(money), camera_x+112, camera_y+2,8)
+  print("k",camera_x+124,camera_y+2,8)
+ end
  
- print("lvl:",camera_x+46,camera_y+2,6)
- print(level,camera_x+62,camera_y+2,7)
- print("/",camera_x+70,camera_y+2,7)
- print(#levels,camera_x+74,camera_y+2,7)
- 
- 
- 
- if dd then
+ if showControls then
   draw_directions()
  end
 end
 
+--draw the email screen
 function draw_email()
 	 cls()
 	 
@@ -490,7 +442,6 @@ function draw_email()
 	 print("to: moneybags, richard",3,15,5)
 	 print("subject: minor problem",3,21,5)
 	 spr(76, 68, 7) --mail icon
-	-- rect(5,26,120,26,13)
 	 rectfill(2,28,124,123,5)
 	 rectfill(3,29,123,122,7)
 
@@ -517,11 +468,10 @@ function draw_email()
 
 end
 
-
-
+--calls appropriate draw method depending on gamestate
 function _draw()
  cls()
- if level_status == -3 then
+ if level_status == -1 then
     draw_email()
  end
  
@@ -688,21 +638,21 @@ __map__
 1115151515151515153215151515151101010101010111151515151515151511111515372121211515381511010101011115151515151515153711010101010101010101111515301615151515151511111515151515151539053215151515111115151515251515251515151515151111151515301515153215151515151511
 11111111111111111111111111111111010101010101111111112a1111111111111111111111111111112e11010101011111111111112a1111111101010101010101010111112e1111111111112a1111111111111111111111111111112e11111111111111111111111111111111111111111111111111111111111111111111
 0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
-11111111111111111111111111112a1111111111111111111111111111112a11111111111111111101010101010101011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111112a1111111111111111111111111111112e111111111111111111111111111111111111
-11212121212121212121251525151511111515151515151615251525151515111115151525151511010101010101010111151515151515151515151515151511113b1515151515151515151515150611111515383215151502151525381515111115151515151515153015151515151111151515151515151515151515151511
-11050505050505050505152515251511193b1515151506161525152525251511191515152525251101010101010101011115151515151515151515151515151111161515151515151515151515151511111515153238151512151515251515111116151515151515151525252525251111151515151515151515151515151511
-11151515151515151615153b15150611111515151515153b1515151515151511112121151515061101010101010101011115151111111115151515151515251111151511111111151515151515151511111615151525152515151525152515111115151515151515153015151515151111151515151515151515151515151511
-112121212121212121211515151515111115151515111111111111111111111111282915150304110101010101010101111515111414191515151515152515111115251101011d151515151515151511113815153215252525251525151515111115151515151515153025251525251111151515151515151515151515151511
-11050505050505050505151515151511111515151511010101010101010101011116151515153b1101010101010101011115151114141115151515152515251111251511010111151515151515151511112121212125152525252121212121111115151515151515153015152515151111151515151515151515151515151511
-11151515151615151515153b1515061111161515151101010101010101010101111111111111251111111111110101011115151111111115151515152525151111152511111111151515151515151511111515151515151515151515151515111115151515151515153015251525151111151515151515151515151515151511
-1121212121212121212115151515151111151515151101010101010101010101010101010111151503041502110101011115151515151515151515152515151111151515151506151515151515151511111515151515151515151515151515111115151515151515153025152515251111151515151515151515151515151511
-11050505050505050505251525151511111515151511010101010101010101010101010101111525151525121101010111151515151515151515151515021511111515151515151515151515151515111115151515151515151515151515151111151515151515151530153b153b151111151515151515151515151515151511
-11151615151515151515153b15150611111515151511010101010101010101010101010101111515152515151101010111211521221515151515151515123b11191515151515151515151515151515111d1515151515151515151515151515111115151515151515152121212121211111151515151515151515151515151511
-1111111111111111111115151515151111151515151101010101010101010101010101010111151515151515110101011115151532250515251515151515151111212121211521221515151525282911111615151515153b15151515150615111115151515151515151515152515151111151515151515151515151515151511
-0000000000000001011125152525151111161515151101010101010101010101010101010111381515151506110101011115151532152513251325152525251111251525152515321515151525153b11113b15251515151515152021212121111115151515151515202121212515211111151515151515151515151515151511
-0101010101010101011115251525151111151515151101010101010101010101010101010111212115152121111111111116153b32151515251528293815041111152515251515321515151525251511111525152515151515151525152538111115151515151515301525152515061111151515151515151515151515151511
-010101010101000101112515151515191115153b151101010101010101010101010101010111161515151515153b3b111115151532151515381515151515151111251525151538321515151525151511112515251525151515153005030415111116151515151515302515152515381111151515151515151515151515151511
-010101010101010101111111111111111111111111110101010101010101010101010101011111112a111111111111111111111111111111112e11111111111111111111111111111111111111111111111111111111111111111111111111111111112a11111111111111111111111111111111111111111111111111111111
+11111111111111111111111111112a1111111111111111111111111111112a11111111111111111101010101010101011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+1121212121212121212125152515151111151515151515161525152515151511111515152515151101010101010101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+11050505050505050505152515251511193b1515151506161525152525251511191515152525251101010101010101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+11151515151515151615153b15150611111515151515153b1515151515151511112121151515061101010101010101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+1121212121212121212115151515151111151515151111111111111111111111112829151503041101010101010101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+11050505050505050505151515151511111515151511010101010101010101011116151515153b1101010101010101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+11151515151615151515153b1515061111161515151101010101010101010101111111111111251111111111110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+1121212121212121212115151515151111151515151101010101010101010101010101010111151503041502110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+1105050505050505050525152515151111151515151101010101010101010101010101010111152515152512110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+11151615151515151515153b1515061111151515151101010101010101010101010101010111151515251515110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+1111111111111111111115151515151111151515151101010101010101010101010101010111151515151515110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+0000000000000001011125152525151111161515151101010101010101010101010101010111381515151506110101011115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+0101010101010101011115251525151111151515151101010101010101010101010101010111212115152121111111111115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+010101010101000101112515151515191115153b151101010101010101010101010101010111161515151515153b3b111115151515151515151515151515151111151515151515151515151515151511111515151515151515151515151515111115151515151515151515151515151111151515151515151515151515151511
+010101010101010101111111111111111111111111110101010101010101010101010101011111112a111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 __sfx__
 011e00200505005050050551105011050110550c0500c0550505005050050551105011050110550c0500c05509050090500905515050150501505510050100550c0500c0500c0551805018050180551605016055
 011e00200554005541055410553105531055210552105511055400554105541055310553105521055210551109540095410954109531095310952109521095110a5400a5410a5410a5310a5310a5210a5210a511
@@ -718,7 +668,7 @@ __sfx__
 010300000150109571095710a5710a5710a5710a5710b5710b5710c5710d5710d5710e5711157115571185711b5711f57122571275712e57132571345711e501225012250126501045012a5012e5013650139501
 010600000400031070310603105031040310303101002400024000240002450034500345004460044600546005460054600646007460074700847008470094700b4700c470044000440004400000000000000000
 01060000004003107031060310503104031030310101940018400154000c4000b400094000840008400074000c4700b4700947008470084700747007460064600546005460054600446004460034500345002450
-011000000000000000000000000000000000000000000000070000600005000050000500004000040000000000000000000000000000000000000000000000000000000000000000000000000030000300002000
+0101000015050170501705017050170501705017050170501705017050160501705017050170501705017050170501705017050170501f0501f0501f0501f0501f0501f0501f0501f0501f0501f0501f05020050
 010100002405024050240502405024050240512405124051290512905129051290522905229052290522905229042290422904229042290422904229042290322903229032290222902229022290122901229015
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -833,3 +783,4 @@ __music__
 00 41424344
 00 41424344
 00 41424344
+
