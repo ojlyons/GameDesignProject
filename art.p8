@@ -472,8 +472,8 @@ function draw_game()
  
  print("lvl:",camera_x+46,camera_y+2,6)
  print(level,camera_x+62,camera_y+2,7)
- print("/",camera_x+66,camera_y+2,7)
- print(#levels,camera_x+70,camera_y+2,7)
+ print("/",camera_x+70,camera_y+2,7)
+ print(#levels,camera_x+74,camera_y+2,7)
  
  
  
