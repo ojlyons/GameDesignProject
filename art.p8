@@ -386,8 +386,8 @@ end
 
 --shows directions (can be used during gameplay)
 function draw_directions()
-	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+100,5)
-	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+99,7)
+	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+112,5)
+	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+111,7)
 	print("use the arrow keys to move", 12+camera_x, 54+camera_y, 0)
 	print("stuck? use z to reset",camera_x+22,camera_y+64,0)
 	print("the level.",camera_x+43,camera_y+70,0)
@@ -395,7 +395,7 @@ function draw_directions()
 	print("block your employees'", camera_x+21, camera_y+86, 0)
 	print("laser pointers", camera_x+36, camera_y+92, 0)
 	print("and unlock elevators with", camera_x+14, camera_y+98, 0)
-	print("the spinning keycards", camera_x+36,camera_y+92,0)
+	print("the spinning keycards", camera_x+22, camera_y+104, 0)
 end
 
 --screen for end of game
@@ -464,6 +464,11 @@ function draw_game()
   print(flr(money), camera_x+112, camera_y+2,8)
   print("k",camera_x+124,camera_y+2,8)
  end
+ 
+ print("lvl:",camera_x+46,camera_y+2,6) --level
+ print(level,camera_x+62,camera_y+2,7)
+ print("/",camera_x+70,camera_y+2,7)
+ print(#levels,camera_x+74,camera_y+2,7)
  
  if showControls then
   draw_directions()
@@ -821,4 +826,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
