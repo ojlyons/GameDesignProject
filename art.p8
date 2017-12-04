@@ -33,11 +33,12 @@ dying = false
 flame_time = 0
 flame_sprite = 68
 sfxp = false --used for email sfx
+freeze_money = false
 
 --ed is the direction he has to go to leave the elevator, -2 is up, -1 is left, 
 --1 is right, 2 is down
 
-levels = {{xs=48, ys=8, ed=2, crds=1}, 
+levels = {{xs=48, ys=8, ed=2, crds=1},
           {xs=248, ys=72, ed=-1, crds=1}, 
 		  {xs=336, ys=120, ed=-2, crds=1},
 		  {xs=496,ys=8, ed=2, crds=1},
@@ -306,7 +307,9 @@ function _update()
 	else		
 	 timer += 1
 	 st += 1
-	 money = money - 1/30
+	 if not freeze_money then
+		money = money - 1/30
+	 end
 		
 	 if st >= 30 then
 	  st = 0
@@ -386,18 +389,20 @@ function draw_menu()
 	--print("use the arrow keys to move.", 0, 56, 9)
 	--print("stuck? use z to reset the level.",0,64,9)
 	--print("push office chairs to block the",0,72,9)
-	--print("laser pointers of your employees.", 0, 80, 9)
+	--print("laser pointers of your employees", 0, 80, 9)
 end
 
-function draw_directions()
-	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+100,5)
-	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+99,7)
+function draw_directions()--12
+	rectfill(camera_x+9,camera_y+51,camera_x+117,camera_y+112,5)
+	rectfill(camera_x+10,camera_y+52,camera_x+116,camera_y+111,7)
 	print("use the arrow keys to move", 12+camera_x, 54+camera_y, 0)
 	print("stuck? use z to reset",camera_x+22,camera_y+64,0)
 	print("the level.",camera_x+43,camera_y+70,0)
 	print("push office chairs to ",camera_x+21,camera_y+80,0)
 	print("block the laser pointers ", camera_x+15, camera_y+86, 0)
-	print("of your employees.", camera_x+27, camera_y+92, 0)
+	print("of your employees", camera_x+27, camera_y+92, 0)
+	print("and unlock elevators with", camera_x+14, camera_y+98, 0)
+	print("spinning keycards", camera_x+27, camera_y+104, 0)
 end
 function draw_game_over()
     freeze_money = true
@@ -464,6 +469,13 @@ function draw_game()
  spr(11, camera_x+103, camera_y) --munny
  print(flr(money), camera_x+112, camera_y+2,7)
  print("k",camera_x+124,camera_y+2,7)
+ 
+ print("lvl:",camera_x+46,camera_y+2,6)
+ print(level,camera_x+62,camera_y+2,7)
+ print("/",camera_x+66,camera_y+2,7)
+ print(#levels,camera_x+70,camera_y+2,7)
+ 
+ 
  
  if dd then
   draw_directions()
@@ -821,4 +833,3 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-
