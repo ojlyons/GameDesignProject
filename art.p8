@@ -53,7 +53,7 @@ levels = {{xs=48, ys=8, ed=2, crds=1},
 		  {xs=456,ys=248, ed=-2, crds=2},
 		  {xs=560,ys=168, ed=1, crds=2},
 		  {xs=640,ys=208, ed=1, crds=2},
-		  {xs=872,ys=136, ed=2, crds=2}
+		  {xs=872,ys=136, ed=2, crds=3}
 		  
 		  }
 
@@ -262,6 +262,7 @@ function die()
   end
  end
  if timer >= 60 then --after a second, the level resets
+  money = money-50
   resetlevel()
   dying = false
  end
